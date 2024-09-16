@@ -1,16 +1,16 @@
 {
   "manifest_version": 3,
   "name": "Lock In",
-  "version": "1.0.0",
-  "description": "An extension built for Chrome to reduce distractions.",
+  "version": "1.0",
+  "description": "Blocks distractions like YouTube Shorts, Instagram Reels.",
+  "permissions": ["tabs", "storage"],
   "action": {
     "default_popup": "index.html"
   },
-  "permissions": [],
   "content_scripts": [
     {
       "matches": ["*://*.youtube.com/*"],
-      "js": ["/contentScript.js"]
+      "js": ["dist/contentScript.js"]
     }
   ]
 }

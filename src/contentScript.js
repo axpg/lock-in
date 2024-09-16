@@ -11,7 +11,7 @@ function setDisplay(element, displayValue) {
     }
 }
 
-function hideShortsShelf() {
+function hideShorts() {
     const { miniShortsShelf, shortsShelf } = getShortsShelves();
     if (miniShortsShelf || shortsShelf) {
         setDisplay(miniShortsShelf, 'none');
@@ -22,7 +22,7 @@ function hideShortsShelf() {
     }
 }
 
-function showShortsShelf() {
+function showShorts() {
     const { miniShortsShelf, shortsShelf } = getShortsShelves();
     if (miniShortsShelf || shortsShelf) {
         setDisplay(miniShortsShelf, '');
@@ -33,5 +33,10 @@ function showShortsShelf() {
     }
 }
 
-hideShortsShelf()
-showShortsShelf()
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "hide") {
+        hideShorts();
+    } else if (message.action === "show") {
+        showShorts();
+    }
+});
