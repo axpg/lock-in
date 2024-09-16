@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Lock In",
+  "version": "1.0.0",
+  "description": "An extension built for Chrome to reduce distractions.",
+  "action": {
+    "default_popup": "index.html"
+  },
+  "permissions": [],
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["/contentScript.js"]
+    }
+  ]
+}
