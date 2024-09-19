@@ -1,10 +1,3 @@
-/**
- * Retrieves the elements representing the "Shorts" shelves in the YouTube UI.
- *
- * @return {Object} An object containing two properties:
- *  - miniShortsShelf: The DOM element for the mini shorts shelf.
- *  - shortsShelf: The DOM element for the main shorts shelf.
- */
 function getShortsShelves() {
     return {
         miniShortsShelf: document.querySelector('ytd-mini-guide-entry-renderer[aria-label="Shorts"]'),
@@ -12,44 +5,28 @@ function getShortsShelves() {
     };
 }
 
-/**
- * Hides the mini shorts shelf and the shorts shelf by setting their display style to 'none'.
- * Logs a message to the console indicating the action taken or an error if the shelves are not found.
- *
- * @return {void}
- */
 function hideShorts() {
     const { miniShortsShelf, shortsShelf } = getShortsShelves();
     if (miniShortsShelf || shortsShelf) {
         miniShortsShelf.style.display = 'none'
-        shortsShelf.style.display = 'none'
+        shortsShelf.style.display =  'none'
         console.log("Shorts hidden");
     } else {
         console.error("Shorts shelf not found");
     }
 }
 
-/**
- * Restores the display of short shelves if they exist, otherwise logs an error.
- *
- * @return {void}
- */
 function showShorts() {
     const { miniShortsShelf, shortsShelf } = getShortsShelves();
     if (miniShortsShelf || shortsShelf) {
         miniShortsShelf.style.display = ''
-        shortsShelf.style.display = ''
+        shortsShelf.style.display =  ''
         console.log("Shorts restored");
     } else {
         console.error("Shorts shelf not found");
     }
 }
 
-/**
- * Applies the user preference for hiding or showing Shorts.
- *
- * @param {string} action - The action to perform ("hide" or "show").
- */
 function applyUserPreference(action) {
     if (action === "hide") {
         hideShorts();
@@ -58,11 +35,9 @@ function applyUserPreference(action) {
     }
 }
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "hide") {
-        hideShorts();
-    } else if (message.action === "show") {
-        showShorts();
+chrome.runtime.onMessage.addListener((message) => {
+    if (message.action === "hide" || message.action === "show") {
+        applyUserPreference(message.action);
     }
 });
 
@@ -70,3 +45,44 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 chrome.storage.sync.get({ shortsVisibility: "show" }, (data) => {
     applyUserPreference(data.shortsVisibility);
 });
+
+function checkAndApplyPreference() {
+    chrome.storage.sync.get({ shortsVisibility: "show" }, (data) => {
+        applyUserPreference(data.shortsVisibility);
+    });
+}
+
+// Set up MutationObserver to watch for changes
+function setupObserver() {
+    const observer = new MutationObserver((mutations) => {
+        for (let mutation of mutations) {
+            if (mutation.addedNodes.length) {
+                checkAndApplyPreference();
+                break;
+            }
+        }
+    });
+
+    // Configuration for the observer
+    const config = { childList: true, subtree: true };
+
+    // Start observing the document body for changes
+    if (document.body) {
+        observer.observe(document.body, config);
+        console.log("Observer started on document.body");
+    } else {
+        console.log("Document body not available, retrying...");
+        setTimeout(setupObserver, 1000); // Retry after 1 second
+    }
+}
+
+function init() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupObserver);
+    } else {
+        setupObserver();
+    }
+    checkAndApplyPreference();
+}
+
+init();
