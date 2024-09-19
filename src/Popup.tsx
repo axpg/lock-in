@@ -1,7 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function Popup() {
     const [shortsIsHidden, setShortsIsHidden] = useState(false);
+
+    useEffect(() => {
+        chrome.storage.sync.get({ shortsVisibility: "show" }, (data) => {
+            setShortsIsHidden(data.shortsVisibility === "hide");
+        });
+    }, []);
 
     const toggleShorts = () => {
         const action = shortsIsHidden ? "show" : "hide";
@@ -10,6 +16,10 @@ function Popup() {
             if (tabs[0].id) {
                 chrome.tabs.sendMessage(tabs[0].id, { action });
             }
+        });
+
+        chrome.storage.sync.set({ shortsVisibility: action }, () => {
+            console.log(`Shorts visibility set to ${action}`);
         });
 
         setShortsIsHidden(!shortsIsHidden);

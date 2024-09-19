@@ -13,19 +13,6 @@ function getShortsShelves() {
 }
 
 /**
- * Sets the display style of the provided HTML element.
- *
- * @param {HTMLElement} element - The element for which to set the display style.
- * @param {string} displayValue - The display value to set (e.g., "block", "none").
- * @return {void}
- */
-function setDisplay(element, displayValue) {
-    if (element) {
-        element.style.display = displayValue;
-    }
-}
-
-/**
  * Hides the mini shorts shelf and the shorts shelf by setting their display style to 'none'.
  * Logs a message to the console indicating the action taken or an error if the shelves are not found.
  *
@@ -34,8 +21,8 @@ function setDisplay(element, displayValue) {
 function hideShorts() {
     const { miniShortsShelf, shortsShelf } = getShortsShelves();
     if (miniShortsShelf || shortsShelf) {
-        setDisplay(miniShortsShelf, 'none');
-        setDisplay(shortsShelf, 'none');
+        miniShortsShelf.style.display = 'none'
+        shortsShelf.style.display = 'none'
         console.log("Shorts hidden");
     } else {
         console.error("Shorts shelf not found");
@@ -50,11 +37,24 @@ function hideShorts() {
 function showShorts() {
     const { miniShortsShelf, shortsShelf } = getShortsShelves();
     if (miniShortsShelf || shortsShelf) {
-        setDisplay(miniShortsShelf, '');
-        setDisplay(shortsShelf, '');
+        miniShortsShelf.style.display = ''
+        shortsShelf.style.display = ''
         console.log("Shorts restored");
     } else {
         console.error("Shorts shelf not found");
+    }
+}
+
+/**
+ * Applies the user preference for hiding or showing Shorts.
+ *
+ * @param {string} action - The action to perform ("hide" or "show").
+ */
+function applyUserPreference(action) {
+    if (action === "hide") {
+        hideShorts();
+    } else if (action === "show") {
+        showShorts();
     }
 }
 
@@ -64,4 +64,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     } else if (message.action === "show") {
         showShorts();
     }
+});
+
+// On content script load, retrieve the stored preference and apply it
+chrome.storage.sync.get({ shortsVisibility: "show" }, (data) => {
+    applyUserPreference(data.shortsVisibility);
 });
