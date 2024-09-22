@@ -4,6 +4,9 @@ const SELECTORS = {
     shortsShelf: 'ytd-guide-entry-renderer a[title="Shorts"]'
 };
 
+const IGSELECTORS = {
+    reelShelf: '.x1n2onr6.x6s0dn4 a[href="/reels"]'
+}
 // CSS to hide Shorts
 const css = `
     .hide-shorts ${SELECTORS.miniShortsShelf},
