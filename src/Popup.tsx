@@ -4,8 +4,8 @@ function Popup() {
     const [shortsIsHidden, setShortsIsHidden] = useState(false);
 
     useEffect(() => {
-        chrome.storage.sync.get({ shortsVisibility: "show" }, (data) => {
-            setShortsIsHidden(data.shortsVisibility === "hide");
+        chrome.storage.sync.get({ Visibility: "show" }, (data) => {
+            setShortsIsHidden(data.Visibility === "hide");
         });
     }, []);
 
@@ -18,8 +18,8 @@ function Popup() {
             }
         });
 
-        chrome.storage.sync.set({ shortsVisibility: action }, () => {
-            console.log(`Shorts visibility set to ${action}`);
+        chrome.storage.sync.set({ visibility: action }, () => {
+            console.log(`Visibility set to ${action}`);
         });
 
         setShortsIsHidden(!shortsIsHidden);
