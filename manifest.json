@@ -9,8 +9,11 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://*.youtube.com/*"],
-      "js": ["src/contentScript.js"],
+      "matches": [
+        "*://*.youtube.com/*",
+        "*://*.instagram.com/*"
+      ],
+      "js": ["src/mainScript.js"],
       "run_at": "document_start"
     }
   ]
