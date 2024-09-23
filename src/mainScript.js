@@ -4,7 +4,7 @@ const SELECTORS = {
         shortsShelf: 'ytd-guide-entry-renderer a[title="Shorts"]'
     },
     ig: {
-        reelShelf: 'a[href*="/reels"]'  // Updated selector for flexibility
+        reelShelf: 'a[href*="/reels"]'
     }
 };
 
@@ -68,7 +68,7 @@ let visibilityYt = 'show';
 let visibilityIg = 'show';
 
 // Function to hide Instagram Reels by adding a class
-//could be abstracted to 'hide closest div' and take in parameter
+// could be abstracted to 'hide closest div' and take in parameter
 function hideInstagramReels() {
     const reelsLinks = document.querySelectorAll(SELECTORS.ig.reelShelf);
     reelsLinks.forEach(link => {
