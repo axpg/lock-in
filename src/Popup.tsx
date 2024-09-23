@@ -73,7 +73,7 @@ function Popup() {
             <img
                 src={"https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Instagram_logo.png/640px-Instagram_logo.png"}
                 alt={"instagram"}
-                className={"instagram-play-button"}
+                className={"ig-button"}
                 onClick={function() { togglePlatform("ig"); }}
                 style={{ opacity: instagramIsHidden ? 0.5 : 1 }}
             />

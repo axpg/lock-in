@@ -29,3 +29,14 @@
 .youtube-play-button:hover {
   transform: scale(1.1);
 }
+
+.ig-button {
+  width: 275px ;
+  height: 200px ;
+  transition: transform 0.4s ease-in-out;
+}
+
+.ig-button:hover {
+  transform: scale(1.1);
+}
+
