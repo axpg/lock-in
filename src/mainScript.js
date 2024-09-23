@@ -4,59 +4,87 @@ const SELECTORS = {
         shortsShelf: 'ytd-guide-entry-renderer a[title="Shorts"]'
     },
     ig: {
-        reelShelf: 'a[href="/reels"]'
+        reelShelf: 'a[href*="/reels"]'  // Updated selector for flexibility
     }
 };
 
-const reelsDiv = SELECTORS.ig.reelShelf.closest('div');
+const css = `
+    /* YouTube */
+    ${SELECTORS.yt.miniShortsShelf},
+    ${SELECTORS.yt.shortsShelf} {
+        display: none !important;
+    }
 
-const css = {
-    yt: `
-        ${SELECTORS.yt.miniShortsShelf},
-        ${SELECTORS.yt.shortsShelf} {
-            display: none !important;
-        }
-    `,
-    ig: `
-        ${SELECTORS.ig.reelShelf} {
-            display: none !important;
-        }
-    `
-};
+    /* Instagram */
+    .hide-reels {
+        display: none !important;
+    }
+`;
 
-// Function to inject CSS
-function injectCSS(platform) {
-    if (!document.getElementById(`custom-hide-style-${platform}`)) {
+// Function to inject global CSS
+function injectGlobalCSS() {
+    if (!document.getElementById('custom-hide-global-style')) {
         const style = document.createElement('style');
-        style.id = `custom-hide-style-${platform}`;
-        style.textContent = css[platform];
+        style.id = 'custom-hide-global-style';
+        style.textContent = css;
         document.head.appendChild(style);
-        console.log(`CSS to hide ${platform} elements injected`);
+        console.log('Global CSS for hiding elements injected');
     }
 }
 
-// Function to remove injected CSS
-function removeCSS(platform) {
-    const style = document.getElementById(`custom-hide-style-${platform}`);
+// Function to remove global CSS (if needed)
+function removeGlobalCSS() {
+    const style = document.getElementById('custom-hide-global-style');
     if (style) {
         style.remove();
-        console.log(`CSS to hide ${platform} elements removed`);
+        console.log('Global CSS for hiding elements removed');
     }
 }
 
 // Cache user preference
 let visibility = 'show';
 
+// Function to hide Instagram Reels by adding a class
+function hideInstagramReels() {
+    const reelsLinks = document.querySelectorAll(SELECTORS.ig.reelShelf);
+    reelsLinks.forEach(link => {
+        const parentDiv = link.closest('div');
+        if (parentDiv) {
+            parentDiv.classList.add('hide-reels');
+        }
+    });
+}
+
+// Function to show Instagram Reels by removing the class
+function showInstagramReels() {
+    const reelsLinks = document.querySelectorAll(SELECTORS.ig.reelShelf);
+    reelsLinks.forEach(link => {
+        const parentDiv = link.closest('div');
+        if (parentDiv) {
+            parentDiv.classList.remove('hide-reels');
+        }
+    });
+}
+
 // Function to apply visibility based on preference
 function applyVisibility(platform) {
-    if (visibility === 'hide') {
-        document.body.classList.add('hide-shorts');
-        injectCSS(platform);
-    } else {
-        document.body.classList.remove('hide-shorts');
-        removeCSS(platform);
+    if (platform === 'yt') {
+        if (visibility === 'hide') {
+            injectGlobalCSS();
+        } else {
+            removeGlobalCSS();
+        }
     }
-    console.log(`Element ${visibility === 'hide' ? 'hidden' : 'shown'}`);
+
+    if (platform === 'ig') {
+        injectGlobalCSS();  // Ensure global CSS is injected for Instagram
+        if (visibility === 'hide') {
+            hideInstagramReels();
+        } else {
+            showInstagramReels();
+        }
+    }
+    console.log(`Elements are now ${visibility === 'hide' ? 'hidden' : 'shown'}`);
 }
 
 // Listener for messages to update preference
@@ -131,6 +159,7 @@ function setupObserver() {
     observer.observe(targetNode, config);
     console.log(`MutationObserver started on ${window.location.hostname}`);
 }
+
 // Initialize the observer after DOM is ready
 function init() {
     if (document.readyState === 'loading') {
@@ -141,3 +170,4 @@ function init() {
 }
 
 init();
+
