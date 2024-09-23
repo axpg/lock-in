@@ -42,7 +42,9 @@ function removeGlobalCSS() {
 }
 
 // Cache user preference
-let visibility = 'show';
+let visibilityYt = 'show';
+let visibilityIg = 'show';
+
 
 // Function to hide Instagram Reels by adding a class
 function hideInstagramReels() {
@@ -68,34 +70,46 @@ function showInstagramReels() {
 
 // Function to apply visibility based on preference
 function applyVisibility(platform) {
-    if (platform === 'yt') {
-        if (visibility === 'hide') {
-            injectGlobalCSS();
+    console.log(`Applying visibility for ${platform}`);
+    try {
+        if (platform === 'yt') {
+            visibilityYt === 'hide' ? injectGlobalCSS() : removeGlobalCSS();
+        } else if (platform === 'ig') {
+            visibilityIg === 'hide' ? injectGlobalCSS() : removeGlobalCSS();
+            visibilityIg === 'hide' ? hideInstagramReels() : showInstagramReels();
         } else {
-            removeGlobalCSS();
+            console.log("Unsupported platform");
         }
+    } catch (error) {
+        console.error("Error in applyVisibility:", error);
     }
-
-    if (platform === 'ig') {
-        injectGlobalCSS();  // Ensure global CSS is injected for Instagram
-        if (visibility === 'hide') {
-            hideInstagramReels();
-        } else {
-            showInstagramReels();
-        }
-    }
-    console.log(`Elements are now ${visibility === 'hide' ? 'hidden' : 'shown'}`);
 }
 
 // Listener for messages to update preference
-chrome.runtime.onMessage.addListener((message) => {
-    if (message.action === "hide" || message.action === "show") {
-        visibility = message.action;
-        applyVisibility(getPlatform());
-        // Save the updated preference
-        chrome.storage.sync.set({ visibility });
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log("Message received:", message);
+    try {
+        if (message.action === "hide" || message.action === "show") {
+            visibility = message.action;
+            const platform = getPlatform();
+            applyVisibility(platform);
+            // Save the updated preference
+            chrome.storage.sync.set({ visibility }, () => {
+                if (chrome.runtime.lastError) {
+                    console.error("Error saving visibility:", chrome.runtime.lastError);
+                } else {
+                    console.log("Visibility saved successfully");
+                }
+            });
+            sendResponse({ status: "Visibility updated", platform: platform });
+        }
+    } catch (error) {
+        console.error("Error processing message:", error);
+        sendResponse({ status: "Error", error: error.message });
     }
+    return true; // Keeps the message channel open for asynchronous response
 });
+
 
 // Initialize by retrieving stored preference
 chrome.storage.sync.get({ visibility: "show" }, (data) => {
@@ -128,12 +142,12 @@ function getPlatformObserverTarget() {
 }
 
 function getPlatform() {
-    if (window.location.hostname.includes('youtube.com')) {
-        return 'yt';
-    } else if (window.location.hostname.includes('instagram.com')) {
-        return 'ig';
-    }
-    return null;
+    const url = window.location.href;
+    console.log("Current URL:", url);
+    if (url.includes("youtube.com")) return "yt";
+    if (url.includes("instagram.com")) return "ig";
+    console.log("Unknown platform");
+    return "unknown";
 }
 
 // Update the observer setup logic
@@ -170,4 +184,3 @@ function init() {
 }
 
 init();
-
