@@ -57,7 +57,7 @@ function Popup() {
             <h1>Lock In!</h1>
             <h2>Block online distractions and focus</h2>
             <img
-                src={"/youtube_dark.png"}
+                src={"https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/youtube-app-white-icon.png"}
                 alt={"youtube"}
                 className={"youtube-play-button"}
                 onClick={function() { togglePlatform("yt"); }}
