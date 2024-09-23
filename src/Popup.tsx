@@ -4,8 +4,8 @@ function Popup() {
     const [youtubeIsHidden, setYoutubeIsHidden] = useState(false);
     const [instagramIsHidden, setInstagramIsHidden] = useState(false);
 
-    useEffect(function() {
-        chrome.storage.sync.get(["yt", "ig"], function(data) {
+    useEffect(() => {
+        chrome.storage.sync.get(["yt", "ig"], (data) => {
             setYoutubeIsHidden(data.yt === "hide");
             setInstagramIsHidden(data.ig === "hide");
         });
@@ -14,49 +14,42 @@ function Popup() {
     function togglePlatform(platform: string) {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             if (tabs[0]?.id) {
-                chrome.tabs.sendMessage(tabs[0].id, { action: "getState" }, handleStateResponse);
-            }
-        });
+                chrome.tabs.sendMessage(tabs[0].id, { action: "getState" }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        console.error("Error sending message:", chrome.runtime.lastError);
+                        updateStorage(platform);
+                        return;
+                    }
 
-        function handleStateResponse(response: { platform: string; visibility: string } | undefined) {
-            if (chrome.runtime.lastError) {
-                console.error("Error sending message:", chrome.runtime.lastError);
-                return;
-            }
-
-            if (response && response.platform === platform) {
-                const newAction = response.visibility === "show" ? "hide" : "show";
-                chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                    if (tabs[0]?.id) {
-                        chrome.tabs.sendMessage(tabs[0].id, { action: newAction }, handleToggleResponse);
+                    if (response && response.platform === platform) {
+                        const newAction = response.visibility === "show" ? "hide" : "show";
+                        chrome.tabs.sendMessage(tabs[0].id!, { action: newAction }, (toggleResponse) => {
+                            if (chrome.runtime.lastError) {
+                                console.error("Error toggling visibility:", chrome.runtime.lastError);
+                            } else {
+                                console.log("Visibility toggled:", toggleResponse);
+                                updateStorage(platform, newAction);
+                            }
+                        });
+                    } else {
+                        console.log("Not on the correct platform, updating storage only");
+                        updateStorage(platform);
                     }
                 });
-            } else {
-                console.log("Not on the correct platform, updating storage only");
-                updateStorage();
             }
-        }
+        });
+    }
 
-        function handleToggleResponse(toggleResponse: boolean) {
-            if (chrome.runtime.lastError) {
-                console.error("Error toggling visibility:", chrome.runtime.lastError);
+    function updateStorage(platform: string, newAction?: string) {
+        const currentState = platform === "yt" ? youtubeIsHidden : instagramIsHidden;
+        const action = newAction || (currentState ? "show" : "hide");
+        chrome.storage.sync.set({ [platform]: action }, () => {
+            if (platform === "yt") {
+                setYoutubeIsHidden(action === "hide");
             } else {
-                console.log("Visibility toggled:", toggleResponse);
-                updateStorage();
+                setInstagramIsHidden(action === "hide");
             }
-        }
-
-        function updateStorage() {
-            const currentState = platform === "yt" ? youtubeIsHidden : instagramIsHidden;
-            const newAction = currentState ? "show" : "hide";
-            chrome.storage.sync.set({ [platform]: newAction }, function() {
-                if (platform === "yt") {
-                    setYoutubeIsHidden(!currentState);
-                } else {
-                    setInstagramIsHidden(!currentState);
-                }
-            });
-        }
+        });
     }
 
     return (

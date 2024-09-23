@@ -89,12 +89,20 @@ function applyVisibility(platform) {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log("Message received:", message);
     try {
-        if (message.action === "hide" || message.action === "show") {
-            visibility = message.action;
+        if (message.action === "getState") {
             const platform = getPlatform();
+            const visibility = platform === 'yt' ? visibilityYt : visibilityIg;
+            sendResponse({ platform, visibility });
+        } else if (message.action === "hide" || message.action === "show") {
+            const platform = getPlatform();
+            if (platform === 'yt') {
+                visibilityYt = message.action;
+            } else if (platform === 'ig') {
+                visibilityIg = message.action;
+            }
             applyVisibility(platform);
             // Save the updated preference
-            chrome.storage.sync.set({ visibility }, () => {
+            chrome.storage.sync.set({ [platform]: message.action }, () => {
                 if (chrome.runtime.lastError) {
                     console.error("Error saving visibility:", chrome.runtime.lastError);
                 } else {
