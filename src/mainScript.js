@@ -8,36 +8,58 @@ const SELECTORS = {
     }
 };
 
-const css = `
-    /* YouTube */
+// CSS for YouTube
+const ytCSS = `
     ${SELECTORS.yt.miniShortsShelf},
     ${SELECTORS.yt.shortsShelf} {
         display: none !important;
     }
+`;
 
-    /* Instagram */
+// CSS for Instagram
+const igCSS = `
     .hide-reels {
         display: none !important;
     }
 `;
 
-// Function to inject global CSS
-function injectGlobalCSS() {
-    if (!document.getElementById('custom-hide-global-style')) {
+// Function to inject CSS for YouTube
+function injectYouTubeCSS() {
+    if (!document.getElementById('custom-hide-yt-style')) {
         const style = document.createElement('style');
-        style.id = 'custom-hide-global-style';
-        style.textContent = css;
+        style.id = 'custom-hide-yt-style';
+        style.textContent = ytCSS
         document.head.appendChild(style);
-        console.log('Global CSS for hiding elements injected');
+        console.log('YouTube CSS for hiding elements injected');
     }
 }
 
-// Function to remove global CSS (if needed)
-function removeGlobalCSS() {
-    const style = document.getElementById('custom-hide-global-style');
+// Function to remove YouTube CSS
+function removeYouTubeCSS() {
+    const style = document.getElementById('custom-hide-yt-style');
     if (style) {
         style.remove();
-        console.log('Global CSS for hiding elements removed');
+        console.log('YouTube CSS for hiding elements removed');
+    }
+}
+
+// Function to inject CSS for Instagram
+function injectInstagramCSS() {
+    if (!document.getElementById('custom-hide-ig-style')) {
+        const style = document.createElement('style');
+        style.id = 'custom-hide-ig-style';
+        style.textContent = igCSS
+        document.head.appendChild(style);
+        console.log('Instagram CSS for hiding elements injected');
+    }
+}
+
+// Function to remove Instagram CSS
+function removeInstagramCSS() {
+    const style = document.getElementById('custom-hide-ig-style');
+    if (style) {
+        style.remove();
+        console.log('Instagram CSS for hiding elements removed');
     }
 }
 
@@ -45,8 +67,8 @@ function removeGlobalCSS() {
 let visibilityYt = 'show';
 let visibilityIg = 'show';
 
-
 // Function to hide Instagram Reels by adding a class
+//could be abstracted to 'hide closest div' and take in parameter
 function hideInstagramReels() {
     const reelsLinks = document.querySelectorAll(SELECTORS.ig.reelShelf);
     reelsLinks.forEach(link => {
@@ -73,9 +95,9 @@ function applyVisibility(platform) {
     console.log(`Applying visibility for ${platform}`);
     try {
         if (platform === 'yt') {
-            visibilityYt === 'hide' ? injectGlobalCSS() : removeGlobalCSS();
+            visibilityYt === 'hide' ? injectYouTubeCSS() : removeYouTubeCSS();
         } else if (platform === 'ig') {
-            visibilityIg === 'hide' ? injectGlobalCSS() : removeGlobalCSS();
+            visibilityIg === 'hide' ? injectInstagramCSS() : removeInstagramCSS();
             visibilityIg === 'hide' ? hideInstagramReels() : showInstagramReels();
         } else {
             console.log("Unsupported platform");
@@ -84,6 +106,7 @@ function applyVisibility(platform) {
         console.error("Error in applyVisibility:", error);
     }
 }
+
 
 // Listener for messages to update preference
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -120,10 +143,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
 // Initialize by retrieving stored preference
-chrome.storage.sync.get({ visibility: "show" }, (data) => {
-    visibility = data.visibility;
-    applyVisibility(getPlatform());
+chrome.storage.sync.get({ yt: "show", ig: "show" }, (data) => {
+    visibilityYt = data.yt;
+    visibilityIg = data.ig;
+    applyVisibility('yt');
+    applyVisibility('ig');
 });
+
 
 // Debounce function to limit the rate of function calls
 function debounce(fn, delay) {
